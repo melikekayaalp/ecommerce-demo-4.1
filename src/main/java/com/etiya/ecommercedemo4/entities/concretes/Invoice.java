@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.validation.constraints.Size;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -21,6 +22,7 @@ public class Invoice {
     @Column(name = "id")
     private int id;
 
+    @Size(min = 7,max = 7)
     @Column(name = "invoice_number")
     private String invoiceNumber;
 

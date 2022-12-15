@@ -1,8 +1,10 @@
 package com.etiya.ecommercedemo4.business.concretes;
 
+import com.etiya.ecommercedemo4.business.abstracts.IInvoiceService;
 import com.etiya.ecommercedemo4.business.abstracts.IOrderService;
 import com.etiya.ecommercedemo4.business.abstracts.IPaymentService;
 import com.etiya.ecommercedemo4.business.constants.Messages;
+import com.etiya.ecommercedemo4.business.dtos.request.invoices.AddInvoiceRequest;
 import com.etiya.ecommercedemo4.business.dtos.request.order.AddOrderRequest;
 import com.etiya.ecommercedemo4.core.util.exceptions.BusinessException;
 import com.etiya.ecommercedemo4.core.util.mapping.ModelMapperService;
@@ -20,6 +22,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -34,8 +37,9 @@ public class OrderManager implements IOrderService {
     private IPaymentService paymentService;
 
     private IMessagesService messagesService;
+    private IInvoiceService invoiceService;
 
-    //TODO : ADD
+
     @Override
     public DataResult<List<Order>> getAll() {
         List<Order> response = this.orderRepository.findAll();
@@ -47,7 +51,8 @@ public class OrderManager implements IOrderService {
         Order response = this.orderRepository.findById(id).orElseThrow();
         return new SuccessDataResult<Order>(response, messagesService.getMessage(Messages.SuccessMessages.ListById));
     }
-
+    //TODO invoiceNumber
+    @Transactional
     @Override
     public Result add(AddOrderRequest addOrderRequest) {
         checkIfPaymentExists(addOrderRequest.getPaymentId());
@@ -55,7 +60,9 @@ public class OrderManager implements IOrderService {
         order.setId(0);
         Date date = new Date();
         order.setOrderDate(date);
-        this.orderRepository.save(order);
+        Order savedOrder = this.orderRepository.save(order);
+        AddInvoiceRequest invoiceRequest = AddInvoiceRequest.builder().invoiceNumber("15").orderId(savedOrder.getId()).build();
+        invoiceService.add(invoiceRequest);
         return new SuccessResult(messagesService.getMessage(Messages.SuccessMessages.Add));
     }
 
